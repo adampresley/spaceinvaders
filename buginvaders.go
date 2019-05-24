@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"math/rand"
 	"os"
@@ -10,13 +11,22 @@ import (
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
+	"github.com/faiface/pixel/text"
+	"golang.org/x/image/font/basicfont"
 )
 
 var (
-	window   *pixelgl.Window
-	dt       float64
+	window *pixelgl.Window
+
+	dt      float64
+	dtList  [100]float64
+	dtIndex int
+	dtSum   float64
+
 	invaders *Invaders
 	player   *Player
+	atlas    *text.Atlas
+	posText  *text.Text
 )
 
 func main() {
@@ -40,6 +50,9 @@ func run() {
 	}
 
 	window.SetCursorVisible(false)
+
+	atlas = text.NewAtlas(basicfont.Face7x13, text.ASCII)
+	posText = text.New(pixel.V(0, 0), atlas)
 
 	levelBackground, err := loadPicture("./assets/stars.png")
 
@@ -65,6 +78,11 @@ func run() {
 
 		invaders.Draw()
 		player.Draw()
+
+		playerPos := player.GetPosition()
+		posText.Clear()
+		fmt.Fprintf(posText, "X=%f, Y=%f", playerPos.X, playerPos.Y)
+		posText.Draw(window, pixel.IM.Moved(pixel.V(10, 10)))
 
 		window.Update()
 	}
@@ -102,4 +120,18 @@ func loadPicture(path string) (pixel.Picture, error) {
 	}
 
 	return pixel.PictureDataFromImage(img), nil
+}
+
+func calculateFPS() float64 {
+	dtSum -= dtList[dtIndex]
+	dtSum += dt
+	dtList[dtIndex] = dt
+
+	dtIndex++
+
+	if dtIndex == 100 {
+		dtIndex = 0
+	}
+
+	return dtSum / 100.0
 }

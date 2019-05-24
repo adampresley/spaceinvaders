@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 )
@@ -54,11 +52,11 @@ func NewInvader(window *pixelgl.Window, color int) (*Invader, error) {
 }
 
 func (invader *Invader) IsLeftEdge() bool {
-	return (invader.pos.X - (invader.width / 2)) <= 1
+	return invader.pos.X <= 40
 }
 
 func (invader *Invader) IsRightEdge() bool {
-	return (invader.pos.X + (invader.width / 2)) >= 990
+	return invader.pos.X >= 1399
 }
 
 func (invader *Invader) Draw() {
@@ -68,14 +66,14 @@ func (invader *Invader) Draw() {
 }
 
 func (invader *Invader) Move(direction float64, dt float64) {
-	move := 40.0 * direction
+	move := 140.0 * direction
 	x := invader.pos.X + (move * dt)
 
 	invader.pos.X = x
 }
 
-func (invader *Invader) PushDown(lastTick time.Time) {
-
+func (invader *Invader) PushDown() {
+	invader.pos.Y -= 20.0
 }
 
 func (invader *Invader) SetPosition(pos pixel.Vec) {

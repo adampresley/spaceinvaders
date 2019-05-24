@@ -42,16 +42,36 @@ func (player *Player) Draw() {
 	}
 }
 
+func (player *Player) GetPosition() pixel.Vec {
+	return player.pos
+}
+
+func (player *Player) IsLeftEdge() bool {
+	return player.pos.X <= 40
+}
+
+func (player *Player) IsRightEdge() bool {
+	return player.pos.X >= 1399
+}
+
 func (player *Player) MoveLeft(dt float64) {
-	move := -260.0
+	move := -300.0
 	x := player.pos.X + (move * dt)
 
 	player.pos.X = x
+
+	if player.IsLeftEdge() {
+		player.pos.X = 40
+	}
 }
 
 func (player *Player) MoveRight(dt float64) {
-	move := 260.0
+	move := 300.0
 	x := player.pos.X + (move * dt)
 
 	player.pos.X = x
+
+	if player.IsRightEdge() {
+		player.pos.X = 1399
+	}
 }

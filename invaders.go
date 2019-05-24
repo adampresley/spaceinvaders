@@ -58,16 +58,26 @@ func (invaders *Invaders) Move(dt float64) {
 	if invaders.direction == 1 {
 		if invaders.invaders[0][9].IsRightEdge() {
 			invaders.direction = -1
+			invaders.PushDown()
 		}
 	} else {
 		if invaders.invaders[0][0].IsLeftEdge() {
 			invaders.direction = 1
+			invaders.PushDown()
 		}
 	}
 
 	for row := 0; row < len(invaders.invaders); row++ {
 		for col := 0; col < len(invaders.invaders[row]); col++ {
 			invaders.invaders[row][col].Move(invaders.direction, dt)
+		}
+	}
+}
+
+func (invaders *Invaders) PushDown() {
+	for row := 0; row < len(invaders.invaders); row++ {
+		for col := 0; col < len(invaders.invaders[row]); col++ {
+			invaders.invaders[row][col].PushDown()
 		}
 	}
 }
