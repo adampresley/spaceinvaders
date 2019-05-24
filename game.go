@@ -8,22 +8,25 @@ import (
 )
 
 type Game struct {
-	window   *pixelgl.Window
-	invaders *Invaders
-	player   *Player
-	atlas    *text.Atlas
-	posText  *text.Text
+	window     *pixelgl.Window
+	background *pixel.Sprite
+	invaders   *Invaders
+	player     *Player
+	atlas      *text.Atlas
+	posText    *text.Text
 }
 
 func NewGame(window *pixelgl.Window) *Game {
 	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
+	backgroundPicture, _ := loadPicture("./assets/stars.png")
 
 	return &Game{
-		window:   window,
-		invaders: NewInvaders(window),
-		player:   NewPlayer(window),
-		atlas:    atlas,
-		posText:  text.New(pixel.V(0, 0), atlas),
+		window:     window,
+		background: pixel.NewSprite(backgroundPicture, backgroundPicture.Bounds()),
+		invaders:   NewInvaders(window),
+		player:     NewPlayer(window),
+		atlas:      atlas,
+		posText:    text.New(pixel.V(0, 0), atlas),
 	}
 }
 
@@ -44,6 +47,7 @@ func (g *Game) CheckForPlayerMovement(dt float64) {
 }
 
 func (g *Game) Draw() {
+	g.background.Draw(window, pixel.IM.Moved(window.Bounds().Center()))
 	g.invaders.Draw()
 	g.player.Draw()
 }

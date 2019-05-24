@@ -43,14 +43,6 @@ func run() {
 	}
 
 	window.SetCursorVisible(false)
-
-	levelBackground, err := loadPicture("./assets/stars.png")
-
-	if err != nil {
-		panic(err)
-	}
-
-	levelBackgroundSprite := pixel.NewSprite(levelBackground, levelBackground.Bounds())
 	game = NewGame(window)
 
 	lastTick := time.Now()
@@ -60,8 +52,6 @@ func run() {
 		lastTick = time.Now()
 
 		game.CheckForQuit()
-
-		levelBackgroundSprite.Draw(window, pixel.IM.Moved(window.Bounds().Center()))
 		game.MoveInvaders(dt)
 		game.CheckForPlayerMovement(dt)
 
