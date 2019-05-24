@@ -37,7 +37,7 @@ func run() {
 		VSync:  true,
 	}
 
-	config.Monitor = pixelgl.PrimaryMonitor()
+	//config.Monitor = pixelgl.PrimaryMonitor()
 	if window, err = pixelgl.NewWindow(config); err != nil {
 		panic(err)
 	}
