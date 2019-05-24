@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"image"
 	"math/rand"
 	"os"
@@ -11,22 +10,16 @@ import (
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
-	"github.com/faiface/pixel/text"
-	"golang.org/x/image/font/basicfont"
 )
 
 var (
 	window *pixelgl.Window
+	game   *Game
 
 	dt      float64
 	dtList  [100]float64
 	dtIndex int
 	dtSum   float64
-
-	invaders *Invaders
-	player   *Player
-	atlas    *text.Atlas
-	posText  *text.Text
 )
 
 func main() {
@@ -51,9 +44,6 @@ func run() {
 
 	window.SetCursorVisible(false)
 
-	atlas = text.NewAtlas(basicfont.Face7x13, text.ASCII)
-	posText = text.New(pixel.V(0, 0), atlas)
-
 	levelBackground, err := loadPicture("./assets/stars.png")
 
 	if err != nil {
@@ -61,46 +51,22 @@ func run() {
 	}
 
 	levelBackgroundSprite := pixel.NewSprite(levelBackground, levelBackground.Bounds())
-	invaders = NewInvaders(window)
-	player = NewPlayer(window)
+	game = NewGame(window)
 
 	lastTick := time.Now()
 
 	for !window.Closed() {
-		checkForQuit()
-
 		dt = time.Since(lastTick).Seconds()
 		lastTick = time.Now()
 
+		game.CheckForQuit()
+
 		levelBackgroundSprite.Draw(window, pixel.IM.Moved(window.Bounds().Center()))
-		invaders.Move(dt)
-		checkForPlayerMovement()
+		game.MoveInvaders(dt)
+		game.CheckForPlayerMovement(dt)
 
-		invaders.Draw()
-		player.Draw()
-
-		playerPos := player.GetPosition()
-		posText.Clear()
-		fmt.Fprintf(posText, "X=%f, Y=%f", playerPos.X, playerPos.Y)
-		posText.Draw(window, pixel.IM.Moved(pixel.V(10, 10)))
-
+		game.Draw()
 		window.Update()
-	}
-}
-
-func checkForQuit() {
-	if window.JustPressed(pixelgl.KeyQ) {
-		window.SetClosed(true)
-	}
-}
-
-func checkForPlayerMovement() {
-	if window.Pressed(pixelgl.KeyLeft) {
-		player.MoveLeft(dt)
-	}
-
-	if window.Pressed(pixelgl.KeyRight) {
-		player.MoveRight(dt)
 	}
 }
 
