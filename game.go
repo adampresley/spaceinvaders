@@ -10,36 +10,48 @@ import (
 )
 
 type Game struct {
-	window     *pixelgl.Window
-	background *pixel.Sprite
-	invaders   *Invaders
-	player     *Player
-	atlas      *text.Atlas
-	tempText   *text.Text
-	fpsText    *text.Text
+	window        *pixelgl.Window
+	background    *pixel.Sprite
+	invaders      *Invaders
+	player        *Player
+	bulletManager *BulletManager
+	atlas         *text.Atlas
+	tempText      *text.Text
+	fpsText       *text.Text
 }
 
 func NewGame(window *pixelgl.Window) *Game {
 	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
 	backgroundPicture, _ := loadPicture("./assets/stars.png")
 
+	invaders := NewInvaders(window)
+	player := NewPlayer(window)
+	bulletManager := NewBulletManager(window, player.GetPosition(), player.GetHeight())
+
 	return &Game{
-		window:     window,
-		background: pixel.NewSprite(backgroundPicture, backgroundPicture.Bounds()),
-		invaders:   NewInvaders(window),
-		player:     NewPlayer(window),
-		atlas:      atlas,
-		tempText:   text.New(pixel.V(0.0, 0.0), atlas),
-		fpsText:    text.New(pixel.V(0.0, 0.0), atlas),
+		window:        window,
+		background:    pixel.NewSprite(backgroundPicture, backgroundPicture.Bounds()),
+		invaders:      invaders,
+		player:        player,
+		bulletManager: bulletManager,
+		atlas:         atlas,
+		tempText:      text.New(pixel.V(0.0, 0.0), atlas),
+		fpsText:       text.New(pixel.V(0.0, 0.0), atlas),
 	}
 }
 
+/*
+CheckForQuit looks to see if the player has chosen to quit
+*/
 func (g *Game) CheckForQuit() {
 	if g.window.JustPressed(pixelgl.KeyQ) {
 		g.window.SetClosed(true)
 	}
 }
 
+/*
+CheckForPlayerMovement will move the player when left and right are pressed
+*/
 func (g *Game) CheckForPlayerMovement(dt float64) {
 	if g.window.Pressed(pixelgl.KeyLeft) {
 		g.player.MoveLeft(dt)
@@ -50,16 +62,23 @@ func (g *Game) CheckForPlayerMovement(dt float64) {
 	}
 }
 
+/*
+CheckForPlayerShooting will shoot bullets when the spacebar is pressed
+*/
 func (g *Game) CheckForPlayerShooting(dt float64) {
 	if g.player.IsShooting() {
-		g.player.Shoot()
+		g.bulletManager.Shoot(g.player.GetPosition(), g.player.GetHeight())
 	}
 }
 
+/*
+Draw renders the background, invaders, player, and bullets to the window
+*/
 func (g *Game) Draw() {
 	g.background.Draw(window, pixel.IM.Moved(window.Bounds().Center()))
 	g.invaders.Draw()
 	g.player.Draw()
+	g.bulletManager.Draw()
 
 	//g.drawPlayerPosition()
 	g.drawFPS()
@@ -79,11 +98,18 @@ func (g *Game) drawPlayerPosition() {
 	g.tempText.Draw(window, pixel.IM)
 }
 
+func (g *Game) KillHitInvaders(hits []BulletHitVector) {
+	for _, h := range hits {
+		g.invaders.Kill(h.Row, h.Col)
+	}
+}
+
 /*
 MoveBullets moves all active bullets
 */
 func (g *Game) MoveBullets(dt float64) {
-	g.player.MoveBullets(dt)
+	hits := g.bulletManager.Move(dt, g.player.GetPosition(), g.player.GetHeight(), g.invaders)
+	g.KillHitInvaders(hits)
 }
 
 /*

@@ -7,12 +7,17 @@ import (
 	"github.com/faiface/pixel/pixelgl"
 )
 
+const (
+	MAX_ROWS int = 4
+	MAX_COLS int = 10
+)
+
 /*
 Invaders manages a set of invader structs and their movement
 */
 type Invaders struct {
 	window    *pixelgl.Window
-	invaders  [4][10]*Invader
+	invaders  [MAX_ROWS][MAX_COLS]*Invader
 	direction float64
 }
 
@@ -23,14 +28,14 @@ invaders, each positioned in rows and columns
 func NewInvaders(window *pixelgl.Window) *Invaders {
 	var err error
 	var newInvader *Invader
-	var invaders [4][10]*Invader
+	var invaders [MAX_ROWS][MAX_COLS]*Invader
 
 	y := window.Bounds().H() - 25
 
-	for row := 0; row < len(invaders); row++ {
+	for row := 0; row < MAX_ROWS; row++ {
 		x := 180.0
 
-		for col := 0; col < len(invaders[row]); col++ {
+		for col := 0; col < MAX_COLS; col++ {
 			color := rand.Intn(3)
 
 			if newInvader, err = NewInvader(window, color); err != nil {
@@ -57,11 +62,22 @@ func NewInvaders(window *pixelgl.Window) *Invaders {
 Draw renders all invaders onto the window
 */
 func (invaders *Invaders) Draw() {
-	for row := 0; row < len(invaders.invaders); row++ {
-		for col := 0; col < len(invaders.invaders[row]); col++ {
+	for row := 0; row < MAX_ROWS; row++ {
+		for col := 0; col < MAX_COLS; col++ {
 			invaders.invaders[row][col].Draw()
 		}
 	}
+}
+
+/*
+GetInvaders returns the invaders slice
+*/
+func (invaders *Invaders) GetInvaders() [MAX_ROWS][MAX_COLS]*Invader {
+	return invaders.invaders
+}
+
+func (invaders *Invaders) Kill(row, col int) {
+	invaders.invaders[row][col].dead = true
 }
 
 /*
@@ -70,7 +86,7 @@ they are moved down, and the direction reversed
 */
 func (invaders *Invaders) Move(dt float64) {
 	if invaders.direction == 1 {
-		if invaders.invaders[0][9].IsRightEdge() {
+		if invaders.invaders[0][MAX_COLS-1].IsRightEdge() {
 			invaders.direction = -1
 			invaders.PushDown()
 		}
@@ -81,8 +97,8 @@ func (invaders *Invaders) Move(dt float64) {
 		}
 	}
 
-	for row := 0; row < len(invaders.invaders); row++ {
-		for col := 0; col < len(invaders.invaders[row]); col++ {
+	for row := 0; row < MAX_ROWS; row++ {
+		for col := 0; col < MAX_COLS; col++ {
 			invaders.invaders[row][col].Move(invaders.direction, dt)
 		}
 	}
@@ -92,8 +108,8 @@ func (invaders *Invaders) Move(dt float64) {
 PushDown moves all invaders down a row
 */
 func (invaders *Invaders) PushDown() {
-	for row := 0; row < len(invaders.invaders); row++ {
-		for col := 0; col < len(invaders.invaders[row]); col++ {
+	for row := 0; row < MAX_ROWS; row++ {
+		for col := 0; col < MAX_COLS; col++ {
 			invaders.invaders[row][col].PushDown()
 		}
 	}

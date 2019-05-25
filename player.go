@@ -1,32 +1,22 @@
 package main
 
 import (
-	"fmt"
-	"time"
-
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
-)
-
-const (
-	MAX_BULLETS int = 10
 )
 
 /*
 Player is the ship a player uses to fight aliens!
 */
 type Player struct {
-	window        *pixelgl.Window
-	sprite        *pixel.Sprite
-	pos           pixel.Vec
-	width         float64
-	height        float64
-	leftEdge      float64
-	rightEdge     float64
-	dead          bool
-	bullets       []*Bullet
-	currentBullet int
-	nextShotTime  time.Time
+	window    *pixelgl.Window
+	sprite    *pixel.Sprite
+	pos       pixel.Vec
+	width     float64
+	height    float64
+	leftEdge  float64
+	rightEdge float64
+	dead      bool
 }
 
 /*
@@ -38,24 +28,15 @@ func NewPlayer(window *pixelgl.Window) *Player {
 	pos := window.Bounds().Center()
 	pos.Y = 16
 
-	bullets := make([]*Bullet, MAX_BULLETS)
-
-	for i := 0; i < MAX_BULLETS; i++ {
-		bullets[i] = NewBullet(window, pos, sprite.Frame().H())
-	}
-
 	return &Player{
-		window:        window,
-		sprite:        sprite,
-		pos:           pos,
-		width:         sprite.Frame().W(),
-		height:        sprite.Frame().H(),
-		leftEdge:      sprite.Frame().W() / 2,
-		rightEdge:     window.Bounds().W() - (sprite.Frame().W() / 2),
-		dead:          false,
-		bullets:       bullets,
-		currentBullet: -1,
-		nextShotTime:  time.Now(),
+		window:    window,
+		sprite:    sprite,
+		pos:       pos,
+		width:     sprite.Frame().W(),
+		height:    sprite.Frame().H(),
+		leftEdge:  sprite.Frame().W() / 2,
+		rightEdge: window.Bounds().W() - (sprite.Frame().W() / 2),
+		dead:      false,
 	}
 }
 
@@ -66,10 +47,13 @@ func (p *Player) Draw() {
 	if !p.dead {
 		p.sprite.Draw(p.window, pixel.IM.Moved(p.pos))
 	}
+}
 
-	for i := 0; i < MAX_BULLETS; i++ {
-		p.bullets[i].Draw()
-	}
+/*
+GetHeight returns the ship's height
+*/
+func (p *Player) GetHeight() float64 {
+	return p.height
 }
 
 /*
@@ -100,18 +84,6 @@ func (p *Player) IsShooting() bool {
 	return p.window.Pressed(pixelgl.KeySpace)
 }
 
-func (p *Player) MoveBullets(dt float64) {
-	for i := 0; i < MAX_BULLETS; i++ {
-		p.bullets[i].Move(dt)
-
-		if p.bullets[i].IsTopEdge() {
-			fmt.Printf("Killing bullet %d\n", i)
-			p.bullets[i].Kill()
-			p.bullets[i].Reset(p.pos, p.height)
-		}
-	}
-}
-
 /*
 MoveLeft moves the player left, repspecting the left edge boundary
 */
@@ -128,29 +100,4 @@ func (p *Player) MoveRight(dt float64) {
 	move := 300.0
 	x := p.pos.X + (move * dt)
 	p.pos.X = pixel.Clamp(x, p.leftEdge, p.rightEdge)
-}
-
-/*
-Shoot fires a bullet
-*/
-func (p *Player) Shoot() {
-	if time.Now().Before(p.nextShotTime) {
-		return
-	}
-
-	if p.currentBullet >= MAX_BULLETS-1 {
-		p.currentBullet = -1
-	}
-
-	if p.bullets[p.currentBullet+1].IsAlive() {
-		return
-	}
-
-	p.currentBullet++
-
-	p.bullets[p.currentBullet].Reset(p.pos, p.height)
-	p.bullets[p.currentBullet].Resurrect()
-
-	fmt.Printf("Firing bullet %d\n", p.currentBullet)
-	p.nextShotTime = time.Now().Add(time.Second * 1)
 }

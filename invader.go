@@ -64,6 +64,20 @@ func (invader *Invader) Draw() {
 }
 
 /*
+GetRect returns a bounding rectangle for this invader
+*/
+func (invader *Invader) GetRect() pixel.Rect {
+	return pixel.R(invader.pos.X, invader.pos.Y, invader.pos.X+invader.width, invader.pos.Y+invader.height)
+}
+
+/*
+IsAlive returns true if the invader isn't dead
+*/
+func (invader *Invader) IsAlive() bool {
+	return !invader.dead
+}
+
+/*
 IsLeftEdge returns true if the invader is on the left edge of the window
 */
 func (invader *Invader) IsLeftEdge() bool {

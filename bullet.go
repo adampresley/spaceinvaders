@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 )
@@ -44,6 +42,30 @@ func (b *Bullet) Draw() {
 	if !b.dead {
 		b.sprite.Draw(b.window, pixel.IM.Moved(b.pos))
 	}
+}
+
+/*
+HitInvader return true, and the row/col of the invader hit when there is
+a collision
+*/
+func (b *Bullet) HitInvader(invaders *Invaders) (bool, int, int) {
+	ivs := invaders.GetInvaders()
+
+	for row := 0; row < MAX_ROWS; row++ {
+		for col := 0; col < MAX_COLS; col++ {
+			rect := ivs[row][col].GetRect()
+			bulletLeft := b.pos.X - (b.width / 2)
+			bulletRight := b.pos.X + (b.width / 2)
+			bulletTop := b.pos.Y + (b.height / 2)
+			bulletBottom := b.pos.Y - (b.height / 2)
+
+			if ivs[row][col].IsAlive() && bulletRight >= rect.Min.X && bulletLeft <= rect.Max.X && bulletTop >= rect.Min.Y && bulletBottom <= rect.Max.Y {
+				return true, row, col
+			}
+		}
+	}
+
+	return false, 0, 0
 }
 
 /*
@@ -90,7 +112,6 @@ Reset positions the bullet to the player
 */
 func (b *Bullet) Reset(playerPos pixel.Vec, playerHeight float64) {
 	b.pos = pixel.V(playerPos.X, playerPos.Y+(playerHeight/2))
-	fmt.Printf("Bullet pos: %f,%f\n", b.pos.X, b.pos.Y)
 }
 
 /*

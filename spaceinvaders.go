@@ -59,7 +59,7 @@ func run() {
 		lastTick = time.Now()
 
 		game.CheckForQuit()
-		//game.MoveInvaders(dt)
+		game.MoveInvaders(dt)
 		game.CheckForPlayerMovement(dt)
 		game.CheckForPlayerShooting(dt)
 		game.MoveBullets(dt)
