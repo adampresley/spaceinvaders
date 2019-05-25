@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"math/rand"
 	"os"
@@ -16,10 +17,10 @@ var (
 	window *pixelgl.Window
 	game   *Game
 
-	dt      float64
-	dtList  [100]float64
-	dtIndex int
-	dtSum   float64
+	dt     float64
+	fps    int
+	frames int
+	second <-chan time.Time
 )
 
 func main() {
@@ -28,16 +29,14 @@ func main() {
 
 func run() {
 	var err error
-
 	rand.Seed(time.Now().UnixNano())
 
 	config := pixelgl.WindowConfig{
-		Title:  "Pixel Rocks!",
-		Bounds: pixel.R(0, 0, 1920, 1080),
-		VSync:  true,
+		Title:  "Space Invaders",
+		Bounds: pixel.R(0, 0, 1024, 768),
+		VSync:  false,
 	}
 
-	//config.Monitor = pixelgl.PrimaryMonitor()
 	if window, err = pixelgl.NewWindow(config); err != nil {
 		panic(err)
 	}
@@ -45,7 +44,12 @@ func run() {
 	window.SetCursorVisible(false)
 	game = NewGame(window)
 
+	fmt.Printf("Window size: %0.1fx%0.1f\n", window.Bounds().W(), window.Bounds().H())
+
 	lastTick := time.Now()
+	fps = 0
+	frames = 0
+	second = time.Tick(time.Second)
 
 	for !window.Closed() {
 		dt = time.Since(lastTick).Seconds()
@@ -57,9 +61,21 @@ func run() {
 
 		game.Draw()
 		window.Update()
+
+		frames++
+
+		select {
+		case <-second:
+			fps = frames
+			frames = 0
+		default:
+		}
 	}
 }
 
+/*
+loadPicture loads an image file into a picture struct
+*/
 func loadPicture(path string) (pixel.Picture, error) {
 	var err error
 	var file *os.File
@@ -76,18 +92,4 @@ func loadPicture(path string) (pixel.Picture, error) {
 	}
 
 	return pixel.PictureDataFromImage(img), nil
-}
-
-func calculateFPS() float64 {
-	dtSum -= dtList[dtIndex]
-	dtSum += dt
-	dtList[dtIndex] = dt
-
-	dtIndex++
-
-	if dtIndex == 100 {
-		dtIndex = 0
-	}
-
-	return dtSum / 100.0
 }

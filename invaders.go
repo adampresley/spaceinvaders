@@ -7,18 +7,25 @@ import (
 	"github.com/faiface/pixel/pixelgl"
 )
 
+/*
+Invaders manages a set of invader structs and their movement
+*/
 type Invaders struct {
 	window    *pixelgl.Window
 	invaders  [4][10]*Invader
 	direction float64
 }
 
+/*
+NewInvaders creates a new struct. It is initialied with a set of
+invaders, each positioned in rows and columns
+*/
 func NewInvaders(window *pixelgl.Window) *Invaders {
 	var err error
 	var newInvader *Invader
 	var invaders [4][10]*Invader
 
-	y := 500.0
+	y := window.Bounds().H() - 25
 
 	for row := 0; row < len(invaders); row++ {
 		x := 180.0
@@ -33,10 +40,10 @@ func NewInvaders(window *pixelgl.Window) *Invaders {
 			newInvader.SetPosition(pixel.V(x, y))
 			invaders[row][col] = newInvader
 
-			x += 115.0
+			x += 70.0
 		}
 
-		y += 120.0
+		y -= 50.0
 	}
 
 	return &Invaders{
@@ -46,6 +53,9 @@ func NewInvaders(window *pixelgl.Window) *Invaders {
 	}
 }
 
+/*
+Draw renders all invaders onto the window
+*/
 func (invaders *Invaders) Draw() {
 	for row := 0; row < len(invaders.invaders); row++ {
 		for col := 0; col < len(invaders.invaders[row]); col++ {
@@ -54,6 +64,10 @@ func (invaders *Invaders) Draw() {
 	}
 }
 
+/*
+Move advances all invaders. When the group hits a window edge
+they are moved down, and the direction reversed
+*/
 func (invaders *Invaders) Move(dt float64) {
 	if invaders.direction == 1 {
 		if invaders.invaders[0][9].IsRightEdge() {
@@ -74,6 +88,9 @@ func (invaders *Invaders) Move(dt float64) {
 	}
 }
 
+/*
+PushDown moves all invaders down a row
+*/
 func (invaders *Invaders) PushDown() {
 	for row := 0; row < len(invaders.invaders); row++ {
 		for col := 0; col < len(invaders.invaders[row]); col++ {

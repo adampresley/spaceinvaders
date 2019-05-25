@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
@@ -13,7 +15,8 @@ type Game struct {
 	invaders   *Invaders
 	player     *Player
 	atlas      *text.Atlas
-	posText    *text.Text
+	tempText   *text.Text
+	fpsText    *text.Text
 }
 
 func NewGame(window *pixelgl.Window) *Game {
@@ -26,7 +29,8 @@ func NewGame(window *pixelgl.Window) *Game {
 		invaders:   NewInvaders(window),
 		player:     NewPlayer(window),
 		atlas:      atlas,
-		posText:    text.New(pixel.V(0, 0), atlas),
+		tempText:   text.New(pixel.V(0.0, 0.0), atlas),
+		fpsText:    text.New(pixel.V(500.0, 0.0), atlas),
 	}
 }
 
@@ -50,6 +54,23 @@ func (g *Game) Draw() {
 	g.background.Draw(window, pixel.IM.Moved(window.Bounds().Center()))
 	g.invaders.Draw()
 	g.player.Draw()
+
+	//g.drawPlayerPosition()
+	g.drawFPS()
+}
+
+func (g *Game) drawFPS() {
+	g.fpsText.Clear()
+	fmt.Fprintf(g.fpsText, "FPS: %d", fps)
+	g.fpsText.Draw(g.window, pixel.IM)
+}
+
+func (g *Game) drawPlayerPosition() {
+	g.tempText.Clear()
+	playerPos := g.player.GetPosition()
+	fmt.Fprintf(g.tempText, "X = %0.1f Y = %0.1f", playerPos.X, playerPos.Y)
+
+	g.tempText.Draw(window, pixel.IM)
 }
 
 func (g *Game) MoveInvaders(dt float64) {

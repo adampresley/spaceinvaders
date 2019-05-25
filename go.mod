@@ -1,4 +1,4 @@
-module github.com/adampresley/buginvaders
+module github.com/adampresley/spaceinvaders
 
 go 1.12
 
