@@ -14,8 +14,9 @@ import (
 )
 
 var (
-	window *pixelgl.Window
-	game   *Game
+	window      *pixelgl.Window
+	game        *Game
+	spritesheet pixel.Picture
 
 	dt     float64
 	fps    int
@@ -42,6 +43,8 @@ func run() {
 	}
 
 	window.SetCursorVisible(false)
+
+	spritesheet = loadSpritesheet()
 	game = NewGame(window)
 
 	fmt.Printf("Window size: %0.1fx%0.1f\n", window.Bounds().W(), window.Bounds().H())
@@ -92,4 +95,40 @@ func loadPicture(path string) (pixel.Picture, error) {
 	}
 
 	return pixel.PictureDataFromImage(img), nil
+}
+
+func loadSpritesheet() pixel.Picture {
+	var err error
+	var pic pixel.Picture
+
+	if pic, err = loadPicture("./assets/spritesheet.png"); err != nil {
+		panic(err)
+	}
+
+	return pic
+}
+
+func getBulletSprite() *pixel.Sprite {
+	result := pixel.NewSprite(spritesheet, pixel.R(0, 0, 4, 9))
+	return result
+}
+
+func getShipSprite() *pixel.Sprite {
+	result := pixel.NewSprite(spritesheet, pixel.R(5, 0, 49, 30))
+	return result
+}
+
+func getBlueInvaderSprite() *pixel.Sprite {
+	result := pixel.NewSprite(spritesheet, pixel.R(54, 0, 103, 37))
+	return result
+}
+
+func getGreenInvaderSprite() *pixel.Sprite {
+	result := pixel.NewSprite(spritesheet, pixel.R(104, 0, 153, 37))
+	return result
+}
+
+func getRedInvaderSprite() *pixel.Sprite {
+	result := pixel.NewSprite(spritesheet, pixel.R(154, 0, 203, 37))
+	return result
 }

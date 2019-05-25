@@ -25,13 +25,8 @@ at the bottom middle of the window
 */
 func NewPlayer(window *pixelgl.Window) *Player {
 	var err error
-	var img pixel.Picture
 
-	if img, err = loadPicture("./assets/ship.png"); err != nil {
-		panic(err)
-	}
-
-	sprite := pixel.NewSprite(img, img.Bounds())
+	sprite := getShipSprite()
 	pos := window.Bounds().Center()
 	pos.Y = 16
 
@@ -39,12 +34,12 @@ func NewPlayer(window *pixelgl.Window) *Player {
 		window: window,
 		sprite: sprite,
 		pos:    pos,
-		width:  img.Bounds().W(),
-		height: img.Bounds().H(),
+		width:  sprite.Frame().W(),
+		height: sprite.Frame().H(),
 		dead:   false,
 
-		leftEdge:  img.Bounds().W() / 2,
-		rightEdge: window.Bounds().W() - (img.Bounds().W() / 2),
+		leftEdge:  sprite.Frame().W() / 2,
+		rightEdge: window.Bounds().W() - (sprite.Frame().W() / 2),
 	}
 }
 

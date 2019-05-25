@@ -26,38 +26,30 @@ three colors: blue(1), green(2), or red(3).
 */
 func NewInvader(window *pixelgl.Window, color int) (*Invader, error) {
 	var err error
-	var img pixel.Picture
-
-	imageToLoad := ""
+	var sprite *pixel.Sprite
 
 	switch color {
 	case 1:
-		imageToLoad = "./assets/invader-blue.png"
+		sprite = getBlueInvaderSprite()
 
 	case 2:
-		imageToLoad = "./assets/invader-green.png"
+		sprite = getGreenInvaderSprite()
 
 	default:
-		imageToLoad = "./assets/invader-red.png"
+		sprite = getRedInvaderSprite()
 	}
-
-	if img, err = loadPicture(imageToLoad); err != nil {
-		return nil, err
-	}
-
-	sprite := pixel.NewSprite(img, img.Bounds())
 
 	result := &Invader{
 		window: window,
 		sprite: sprite,
 		color:  color,
 		pos:    pixel.V(0, 0),
-		width:  img.Bounds().W(),
-		height: img.Bounds().H(),
+		width:  sprite.Frame().W(),
+		height: sprite.Frame().H(),
 		dead:   false,
 
-		leftEdge:  img.Bounds().W() / 2,
-		rightEdge: window.Bounds().W() - (img.Bounds().W() / 2),
+		leftEdge:  sprite.Frame().W() / 2,
+		rightEdge: window.Bounds().W() - (sprite.Frame.W() / 2),
 	}
 
 	return result, nil

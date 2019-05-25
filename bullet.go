@@ -17,3 +17,5 @@ type Bullet struct {
 	leftEdge  float64
 	rightEdge float64
 }
+
+//func NewBullet(window *pixelgl.Window, )
