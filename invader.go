@@ -105,7 +105,7 @@ func (invader *Invader) Move(direction float64, dt float64) {
 PushDown moves the invader down a row
 */
 func (invader *Invader) PushDown() {
-	invader.pos.Y -= 20.0
+	invader.pos.Y -= invader.height
 }
 
 /*

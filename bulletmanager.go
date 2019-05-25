@@ -9,7 +9,7 @@ import (
 
 const (
 	MAX_BULLETS int           = 10
-	SHOOT_DELAY time.Duration = time.Millisecond * 500
+	SHOOT_DELAY time.Duration = time.Millisecond * 650
 )
 
 type BulletManager struct {
