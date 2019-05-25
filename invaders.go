@@ -19,6 +19,8 @@ type Invaders struct {
 	window    *pixelgl.Window
 	invaders  [MAX_ROWS][MAX_COLS]*Invader
 	direction float64
+	firstCol  int
+	lastCol   int
 }
 
 /*
@@ -55,6 +57,8 @@ func NewInvaders(window *pixelgl.Window) *Invaders {
 		window:    window,
 		invaders:  invaders,
 		direction: 1,
+		firstCol:  0,
+		lastCol:   MAX_COLS - 1,
 	}
 }
 
@@ -78,6 +82,7 @@ func (invaders *Invaders) GetInvaders() [MAX_ROWS][MAX_COLS]*Invader {
 
 func (invaders *Invaders) Kill(row, col int) {
 	invaders.invaders[row][col].dead = true
+	invaders.recalculateFirstAndLastColumn()
 }
 
 /*
@@ -86,12 +91,12 @@ they are moved down, and the direction reversed
 */
 func (invaders *Invaders) Move(dt float64) {
 	if invaders.direction == 1 {
-		if invaders.invaders[0][MAX_COLS-1].IsRightEdge() {
+		if invaders.invaders[0][invaders.lastCol].IsRightEdge() {
 			invaders.direction = -1
 			invaders.PushDown()
 		}
 	} else {
-		if invaders.invaders[0][0].IsLeftEdge() {
+		if invaders.invaders[0][invaders.firstCol].IsLeftEdge() {
 			invaders.direction = 1
 			invaders.PushDown()
 		}
@@ -113,4 +118,32 @@ func (invaders *Invaders) PushDown() {
 			invaders.invaders[row][col].PushDown()
 		}
 	}
+}
+
+func (invaders *Invaders) recalculateFirstAndLastColumn() {
+	lastCol := 0
+	firstCol := MAX_COLS - 1
+
+	var col int
+
+	for row := 0; row < MAX_ROWS; row++ {
+		for col = 0; col < MAX_COLS; col++ {
+			if invaders.invaders[row][col].IsAlive() {
+				if col > lastCol {
+					lastCol = col
+				}
+			}
+		}
+
+		for col = MAX_COLS - 1; col > -1; col-- {
+			if invaders.invaders[row][col].IsAlive() {
+				if col < firstCol {
+					firstCol = col
+				}
+			}
+		}
+	}
+
+	invaders.lastCol = lastCol
+	invaders.firstCol = firstCol
 }
