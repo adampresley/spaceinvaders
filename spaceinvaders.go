@@ -1,10 +1,10 @@
+//go:generate esc -o ./assets.go -pkg main -ignore "DS_Store|LICENSE|(.*?).go$|(.*?).md|(.*?).svg" ./assets
 package main
 
 import (
-	"fmt"
+	"bytes"
 	"image"
 	"math/rand"
-	"os"
 	"time"
 
 	_ "image/png"
@@ -47,8 +47,6 @@ func run() {
 	spritesheet = loadSpritesheet()
 	game = NewGame(window)
 
-	fmt.Printf("Window size: %0.1fx%0.1f\n", window.Bounds().W(), window.Bounds().H())
-
 	lastTick := time.Now()
 	fps = 0
 	frames = 0
@@ -83,16 +81,24 @@ loadPicture loads an image file into a picture struct
 */
 func loadPicture(path string) (pixel.Picture, error) {
 	var err error
-	var file *os.File
+	//var file *os.File
 	var img image.Image
+	var imageBytes []byte
 
-	if file, err = os.Open(path); err != nil {
+	if imageBytes, err = FSByte(false, path); err != nil {
 		return nil, err
 	}
 
-	defer file.Close()
+	// if file, err = os.Open(path); err != nil {
+	// 	return nil, err
+	// }
 
-	if img, _, err = image.Decode(file); err != nil {
+	// defer file.Close()
+
+	reader := bytes.NewReader(imageBytes)
+
+	//if img, _, err = image.Decode(file); err != nil {
+	if img, _, err = image.Decode(reader); err != nil {
 		return nil, err
 	}
 
@@ -103,7 +109,7 @@ func loadSpritesheet() pixel.Picture {
 	var err error
 	var pic pixel.Picture
 
-	if pic, err = loadPicture("./assets/spritesheet.png"); err != nil {
+	if pic, err = loadPicture("/assets/spritesheet.png"); err != nil {
 		panic(err)
 	}
 

@@ -22,7 +22,7 @@ type Game struct {
 
 func NewGame(window *pixelgl.Window) *Game {
 	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
-	backgroundPicture, _ := loadPicture("./assets/stars.png")
+	backgroundPicture, _ := loadPicture("/assets/stars.png")
 
 	invaders := NewInvaders(window)
 	player := NewPlayer(window)
