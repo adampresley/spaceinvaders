@@ -1,22 +1,32 @@
 package main
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
+)
+
+const (
+	MAX_BULLETS int = 10
 )
 
 /*
 Player is the ship a player uses to fight aliens!
 */
 type Player struct {
-	window    *pixelgl.Window
-	sprite    *pixel.Sprite
-	pos       pixel.Vec
-	width     float64
-	height    float64
-	leftEdge  float64
-	rightEdge float64
-	dead      bool
+	window        *pixelgl.Window
+	sprite        *pixel.Sprite
+	pos           pixel.Vec
+	width         float64
+	height        float64
+	leftEdge      float64
+	rightEdge     float64
+	dead          bool
+	bullets       []*Bullet
+	currentBullet int
+	nextShotTime  time.Time
 }
 
 /*
@@ -24,69 +34,123 @@ NewPlayer creates a new player struct. Is is initialized positioned
 at the bottom middle of the window
 */
 func NewPlayer(window *pixelgl.Window) *Player {
-	var err error
-
 	sprite := getShipSprite()
 	pos := window.Bounds().Center()
 	pos.Y = 16
 
-	return &Player{
-		window: window,
-		sprite: sprite,
-		pos:    pos,
-		width:  sprite.Frame().W(),
-		height: sprite.Frame().H(),
-		dead:   false,
+	bullets := make([]*Bullet, MAX_BULLETS)
 
-		leftEdge:  sprite.Frame().W() / 2,
-		rightEdge: window.Bounds().W() - (sprite.Frame().W() / 2),
+	for i := 0; i < MAX_BULLETS; i++ {
+		bullets[i] = NewBullet(window, pos, sprite.Frame().H())
+	}
+
+	return &Player{
+		window:        window,
+		sprite:        sprite,
+		pos:           pos,
+		width:         sprite.Frame().W(),
+		height:        sprite.Frame().H(),
+		leftEdge:      sprite.Frame().W() / 2,
+		rightEdge:     window.Bounds().W() - (sprite.Frame().W() / 2),
+		dead:          false,
+		bullets:       bullets,
+		currentBullet: -1,
+		nextShotTime:  time.Now(),
 	}
 }
 
 /*
 Draw renders this ship onto the window
 */
-func (player *Player) Draw() {
-	if !player.dead {
-		player.sprite.Draw(player.window, pixel.IM.Moved(player.pos))
+func (p *Player) Draw() {
+	if !p.dead {
+		p.sprite.Draw(p.window, pixel.IM.Moved(p.pos))
+	}
+
+	for i := 0; i < MAX_BULLETS; i++ {
+		p.bullets[i].Draw()
 	}
 }
 
 /*
 GetPosition retrieves the player's position vector
 */
-func (player *Player) GetPosition() pixel.Vec {
-	return player.pos
+func (p *Player) GetPosition() pixel.Vec {
+	return p.pos
 }
 
 /*
 IsLeftEdge returns true if the player is on the left edge of the window
 */
-func (player *Player) IsLeftEdge() bool {
-	return player.pos.X <= player.leftEdge
+func (p *Player) IsLeftEdge() bool {
+	return p.pos.X <= p.leftEdge
 }
 
 /*
 IsRightEdge returns true if the player is on the right edge of the window
 */
-func (player *Player) IsRightEdge() bool {
-	return player.pos.X >= player.rightEdge
+func (p *Player) IsRightEdge() bool {
+	return p.pos.X >= p.rightEdge
+}
+
+/*
+IsShooting returns true if the player is pressing Space
+*/
+func (p *Player) IsShooting() bool {
+	return p.window.Pressed(pixelgl.KeySpace)
+}
+
+func (p *Player) MoveBullets(dt float64) {
+	for i := 0; i < MAX_BULLETS; i++ {
+		p.bullets[i].Move(dt)
+
+		if p.bullets[i].IsTopEdge() {
+			fmt.Printf("Killing bullet %d\n", i)
+			p.bullets[i].Kill()
+			p.bullets[i].Reset(p.pos, p.height)
+		}
+	}
 }
 
 /*
 MoveLeft moves the player left, repspecting the left edge boundary
 */
-func (player *Player) MoveLeft(dt float64) {
+func (p *Player) MoveLeft(dt float64) {
 	move := -300.0
-	x := player.pos.X + (move * dt)
-	player.pos.X = pixel.Clamp(x, player.leftEdge, player.rightEdge)
+	x := p.pos.X + (move * dt)
+	p.pos.X = pixel.Clamp(x, p.leftEdge, p.rightEdge)
 }
 
 /*
 MoveRight moves the player right, respecting the right edge boundary
 */
-func (player *Player) MoveRight(dt float64) {
+func (p *Player) MoveRight(dt float64) {
 	move := 300.0
-	x := player.pos.X + (move * dt)
-	player.pos.X = pixel.Clamp(x, player.leftEdge, player.rightEdge)
+	x := p.pos.X + (move * dt)
+	p.pos.X = pixel.Clamp(x, p.leftEdge, p.rightEdge)
+}
+
+/*
+Shoot fires a bullet
+*/
+func (p *Player) Shoot() {
+	if time.Now().Before(p.nextShotTime) {
+		return
+	}
+
+	if p.currentBullet >= MAX_BULLETS-1 {
+		p.currentBullet = -1
+	}
+
+	if p.bullets[p.currentBullet+1].IsAlive() {
+		return
+	}
+
+	p.currentBullet++
+
+	p.bullets[p.currentBullet].Reset(p.pos, p.height)
+	p.bullets[p.currentBullet].Resurrect()
+
+	fmt.Printf("Firing bullet %d\n", p.currentBullet)
+	p.nextShotTime = time.Now().Add(time.Second * 1)
 }

@@ -30,7 +30,7 @@ func NewGame(window *pixelgl.Window) *Game {
 		player:     NewPlayer(window),
 		atlas:      atlas,
 		tempText:   text.New(pixel.V(0.0, 0.0), atlas),
-		fpsText:    text.New(pixel.V(500.0, 0.0), atlas),
+		fpsText:    text.New(pixel.V(0.0, 0.0), atlas),
 	}
 }
 
@@ -47,6 +47,12 @@ func (g *Game) CheckForPlayerMovement(dt float64) {
 
 	if g.window.Pressed(pixelgl.KeyRight) {
 		g.player.MoveRight(dt)
+	}
+}
+
+func (g *Game) CheckForPlayerShooting(dt float64) {
+	if g.player.IsShooting() {
+		g.player.Shoot()
 	}
 }
 
@@ -73,6 +79,16 @@ func (g *Game) drawPlayerPosition() {
 	g.tempText.Draw(window, pixel.IM)
 }
 
+/*
+MoveBullets moves all active bullets
+*/
+func (g *Game) MoveBullets(dt float64) {
+	g.player.MoveBullets(dt)
+}
+
+/*
+MoveInvaders moves all active invaders
+*/
 func (g *Game) MoveInvaders(dt float64) {
 	g.invaders.Move(dt)
 }

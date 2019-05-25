@@ -59,8 +59,10 @@ func run() {
 		lastTick = time.Now()
 
 		game.CheckForQuit()
-		game.MoveInvaders(dt)
+		//game.MoveInvaders(dt)
 		game.CheckForPlayerMovement(dt)
+		game.CheckForPlayerShooting(dt)
+		game.MoveBullets(dt)
 
 		game.Draw()
 		window.Update()
@@ -109,26 +111,26 @@ func loadSpritesheet() pixel.Picture {
 }
 
 func getBulletSprite() *pixel.Sprite {
-	result := pixel.NewSprite(spritesheet, pixel.R(0, 0, 4, 9))
+	result := pixel.NewSprite(spritesheet, pixel.R(0, 0, 10, 38))
 	return result
 }
 
 func getShipSprite() *pixel.Sprite {
-	result := pixel.NewSprite(spritesheet, pixel.R(5, 0, 49, 30))
+	result := pixel.NewSprite(spritesheet, pixel.R(10, 0, 60, 38))
 	return result
 }
 
 func getBlueInvaderSprite() *pixel.Sprite {
-	result := pixel.NewSprite(spritesheet, pixel.R(54, 0, 103, 37))
+	result := pixel.NewSprite(spritesheet, pixel.R(61, 0, 110, 38))
 	return result
 }
 
 func getGreenInvaderSprite() *pixel.Sprite {
-	result := pixel.NewSprite(spritesheet, pixel.R(104, 0, 153, 37))
+	result := pixel.NewSprite(spritesheet, pixel.R(111, 0, 160, 38))
 	return result
 }
 
 func getRedInvaderSprite() *pixel.Sprite {
-	result := pixel.NewSprite(spritesheet, pixel.R(154, 0, 203, 37))
+	result := pixel.NewSprite(spritesheet, pixel.R(161, 0, 210, 38))
 	return result
 }

@@ -25,7 +25,6 @@ NewInvader makes a new invader struct. It is initialized with one of
 three colors: blue(1), green(2), or red(3).
 */
 func NewInvader(window *pixelgl.Window, color int) (*Invader, error) {
-	var err error
 	var sprite *pixel.Sprite
 
 	switch color {
@@ -49,7 +48,7 @@ func NewInvader(window *pixelgl.Window, color int) (*Invader, error) {
 		dead:   false,
 
 		leftEdge:  sprite.Frame().W() / 2,
-		rightEdge: window.Bounds().W() - (sprite.Frame.W() / 2),
+		rightEdge: window.Bounds().W() - (sprite.Frame().W() / 2),
 	}
 
 	return result, nil
