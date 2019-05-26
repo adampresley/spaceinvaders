@@ -9,8 +9,20 @@ import (
 	"golang.org/x/image/font/basicfont"
 )
 
+const (
+	// GAME_MODE_MENU is sitting at the menu
+	GAME_MODE_MENU int = 1
+
+	// GAME_MODE_PLAYING means we are playing the game
+	GAME_MODE_PLAYING int = 2
+)
+
+/*
+Game controls all high level aspects of the game
+*/
 type Game struct {
 	window        *pixelgl.Window
+	gameMode      int
 	background    *pixel.Sprite
 	invaders      *Invaders
 	player        *Player
@@ -18,8 +30,12 @@ type Game struct {
 	atlas         *text.Atlas
 	tempText      *text.Text
 	fpsText       *text.Text
+	menuManager   *MenuManager
 }
 
+/*
+NewGame intializes the game
+*/
 func NewGame(window *pixelgl.Window) *Game {
 	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
 	backgroundPicture, _ := loadPicture("/assets/stars.png")
@@ -30,6 +46,7 @@ func NewGame(window *pixelgl.Window) *Game {
 
 	return &Game{
 		window:        window,
+		gameMode:      GAME_MODE_MENU,
 		background:    pixel.NewSprite(backgroundPicture, backgroundPicture.Bounds()),
 		invaders:      invaders,
 		player:        player,
@@ -37,6 +54,7 @@ func NewGame(window *pixelgl.Window) *Game {
 		atlas:         atlas,
 		tempText:      text.New(pixel.V(0.0, 0.0), atlas),
 		fpsText:       text.New(pixel.V(0.0, 0.0), atlas),
+		menuManager:   NewMenuManager(window),
 	}
 }
 
@@ -75,19 +93,30 @@ func (g *Game) CheckForPlayerShooting(dt float64) {
 Draw renders the background, invaders, player, and bullets to the window
 */
 func (g *Game) Draw() {
-	g.background.Draw(window, pixel.IM.Moved(window.Bounds().Center()))
-	g.invaders.Draw()
-	g.player.Draw()
-	g.bulletManager.Draw()
-
-	//g.drawPlayerPosition()
-	g.drawFPS()
+	if g.gameMode == GAME_MODE_MENU {
+		g.drawMenu()
+	} else if g.gameMode == GAME_MODE_PLAYING {
+		g.drawGame()
+	}
 }
 
 func (g *Game) drawFPS() {
 	g.fpsText.Clear()
 	fmt.Fprintf(g.fpsText, "FPS: %d", fps)
 	g.fpsText.Draw(g.window, pixel.IM)
+}
+
+func (g *Game) drawGame() {
+	g.background.Draw(window, pixel.IM.Moved(window.Bounds().Center()))
+	g.invaders.Draw()
+	g.player.Draw()
+	g.bulletManager.Draw()
+
+	g.drawFPS()
+}
+
+func (g *Game) drawMenu() {
+	g.menuManager.Draw()
 }
 
 func (g *Game) drawPlayerPosition() {
@@ -98,6 +127,16 @@ func (g *Game) drawPlayerPosition() {
 	g.tempText.Draw(window, pixel.IM)
 }
 
+/*
+GetGameMode returns the current game mode
+*/
+func (g *Game) GetGameMode() int {
+	return g.gameMode
+}
+
+/*
+KillHitInvaders marks any invaders who have been hit by a bullet as "dead"
+*/
 func (g *Game) KillHitInvaders(hits []BulletHitVector) {
 	for _, h := range hits {
 		g.invaders.Kill(h.Row, h.Col)
@@ -117,4 +156,42 @@ MoveInvaders moves all active invaders
 */
 func (g *Game) MoveInvaders(dt float64) {
 	g.invaders.Move(dt)
+}
+
+/*
+Update does all the updating, such as bullets, ships, and invaders
+*/
+func (g *Game) Update(dt float64) {
+	if g.gameMode == GAME_MODE_MENU {
+		g.updateMenu(dt)
+	} else {
+		g.updatePlaying(dt)
+	}
+}
+
+func (g *Game) updateMenu(dt float64) {
+	var pressedEnter bool
+	var selection int
+
+	g.menuManager.CheckForMenuMovement()
+
+	if pressedEnter, selection = g.menuManager.PressedEnter(); pressedEnter {
+		if selection == MENU_ITEM_QUIT {
+			g.window.SetClosed(true)
+			return
+		}
+
+		if selection == MENU_ITEM_NEW_GAME {
+			g.gameMode = GAME_MODE_PLAYING
+		}
+	}
+}
+
+func (g *Game) updatePlaying(dt float64) {
+	g.CheckForQuit()
+	g.MoveInvaders(dt)
+	g.CheckForPlayerMovement(dt)
+	g.CheckForPlayerShooting(dt)
+	g.MoveBullets(dt)
+
 }
