@@ -23,7 +23,7 @@ Game controls all high level aspects of the game
 type Game struct {
 	window        *pixelgl.Window
 	gameMode      int
-	background    *pixel.Sprite
+	background    *GameBackground
 	invaders      *Invaders
 	player        *Player
 	bulletManager *BulletManager
@@ -38,7 +38,6 @@ NewGame intializes the game
 */
 func NewGame(window *pixelgl.Window) *Game {
 	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
-	backgroundPicture, _ := loadPicture("/assets/stars.png")
 
 	invaders := NewInvaders(window)
 	player := NewPlayer(window)
@@ -47,7 +46,7 @@ func NewGame(window *pixelgl.Window) *Game {
 	return &Game{
 		window:        window,
 		gameMode:      GAME_MODE_MENU,
-		background:    pixel.NewSprite(backgroundPicture, backgroundPicture.Bounds()),
+		background:    NewGameBackground(window),
 		invaders:      invaders,
 		player:        player,
 		bulletManager: bulletManager,
@@ -107,7 +106,7 @@ func (g *Game) drawFPS() {
 }
 
 func (g *Game) drawGame() {
-	g.background.Draw(window, pixel.IM.Moved(window.Bounds().Center()))
+	g.background.Draw()
 	g.invaders.Draw()
 	g.player.Draw()
 	g.bulletManager.Draw()
@@ -189,9 +188,9 @@ func (g *Game) updateMenu(dt float64) {
 
 func (g *Game) updatePlaying(dt float64) {
 	g.CheckForQuit()
+	g.background.Update(dt)
+	g.MoveBullets(dt)
 	g.MoveInvaders(dt)
 	g.CheckForPlayerMovement(dt)
 	g.CheckForPlayerShooting(dt)
-	g.MoveBullets(dt)
-
 }

@@ -12,6 +12,9 @@ const (
 	SHOOT_DELAY time.Duration = time.Millisecond * 650
 )
 
+/*
+BulletManager manages bullets
+*/
 type BulletManager struct {
 	window        *pixelgl.Window
 	bullets       []*Bullet
@@ -19,6 +22,9 @@ type BulletManager struct {
 	nextShotTime  time.Time
 }
 
+/*
+BulletHitVector tells us which invader was hit
+*/
 type BulletHitVector struct {
 	Row int
 	Col int

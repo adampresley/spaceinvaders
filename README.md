@@ -11,7 +11,7 @@ make
 ## TO DO:
 
 * ~~Make a menu to start the game~~
-* Scroll the background. That'd be cool
+* ~~Scroll the background. That'd be cool~~
 * Do something when the player kills all the invaders
 * Blow up the ship when the invaders hit the bottom
 * Add an explosion when an invader dies
