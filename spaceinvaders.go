@@ -10,9 +10,8 @@ import (
 )
 
 var (
-	window      *pixelgl.Window
-	game        *Game
-	spritesheet pixel.Picture
+	window *pixelgl.Window
+	game   *Game
 
 	dt     float64
 	fps    int
@@ -40,7 +39,6 @@ func run() {
 
 	window.SetCursorVisible(false)
 
-	spritesheet = loadSpritesheet()
 	game = NewGame(window)
 
 	lastTick := time.Now()

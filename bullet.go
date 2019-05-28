@@ -9,29 +9,31 @@ import (
 Bullet is the ammo a player uses
 */
 type Bullet struct {
-	window  *pixelgl.Window
-	sprite  *pixel.Sprite
-	pos     pixel.Vec
-	width   float64
-	height  float64
-	topEdge float64
-	dead    bool
+	assetManager *AssetManager
+	window       *pixelgl.Window
+	sprite       *pixel.Sprite
+	pos          pixel.Vec
+	width        float64
+	height       float64
+	topEdge      float64
+	dead         bool
 }
 
 /*
 NewBullet initializes a new bullet. It is setup to start at the player's position
 */
-func NewBullet(window *pixelgl.Window, playerPos pixel.Vec, playerHeight float64) *Bullet {
-	sprite := getBulletSprite()
+func NewBullet(window *pixelgl.Window, assetManager *AssetManager, playerPos pixel.Vec, playerHeight float64) *Bullet {
+	sprite := assetManager.GetBulletSprite()
 
 	return &Bullet{
-		window:  window,
-		sprite:  sprite,
-		pos:     pixel.V(playerPos.X, playerPos.Y+(playerHeight/2)),
-		width:   sprite.Frame().W(),
-		height:  sprite.Frame().H(),
-		topEdge: window.Bounds().H() + (sprite.Frame().H() / 2),
-		dead:    true,
+		assetManager: assetManager,
+		window:       window,
+		sprite:       sprite,
+		pos:          pixel.V(playerPos.X, playerPos.Y+(playerHeight/2)),
+		width:        sprite.Frame().W(),
+		height:       sprite.Frame().H(),
+		topEdge:      window.Bounds().H() + (sprite.Frame().H() / 2),
+		dead:         true,
 	}
 }
 

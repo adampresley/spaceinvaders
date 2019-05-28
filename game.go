@@ -15,22 +15,31 @@ const (
 
 	// GAME_MODE_PLAYING means we are playing the game
 	GAME_MODE_PLAYING int = 2
+
+	// GAME_MODE_WON means the player won!
+	GAME_MODE_WON int = 3
+
+	// GAME_MODE_LOST means the player lost!
+	GAME_MODE_LOST int = 4
 )
 
 /*
 Game controls all high level aspects of the game
 */
 type Game struct {
-	window        *pixelgl.Window
-	gameMode      int
-	background    *GameBackground
-	invaders      *Invaders
-	player        *Player
-	bulletManager *BulletManager
+	assetManager  *AssetManager
 	atlas         *text.Atlas
-	tempText      *text.Text
+	background    *GameBackground
+	bulletManager *BulletManager
 	fpsText       *text.Text
+	gameMode      int
+	invaders      *Invaders
 	menuManager   *MenuManager
+	player        *Player
+	tempText      *text.Text
+	window        *pixelgl.Window
+	youLoseAsset  *pixel.Sprite
+	youWinAsset   *pixel.Sprite
 }
 
 /*
@@ -39,21 +48,25 @@ NewGame intializes the game
 func NewGame(window *pixelgl.Window) *Game {
 	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
 
-	invaders := NewInvaders(window)
-	player := NewPlayer(window)
-	bulletManager := NewBulletManager(window, player.GetPosition(), player.GetHeight())
+	assetManager := NewAssetManager()
+	invaders := NewInvaders(window, assetManager)
+	player := NewPlayer(window, assetManager)
+	bulletManager := NewBulletManager(window, assetManager, player.GetPosition(), player.GetHeight())
 
 	return &Game{
-		window:        window,
-		gameMode:      GAME_MODE_MENU,
-		background:    NewGameBackground(window),
-		invaders:      invaders,
-		player:        player,
-		bulletManager: bulletManager,
+		assetManager:  assetManager,
 		atlas:         atlas,
-		tempText:      text.New(pixel.V(0.0, 0.0), atlas),
+		background:    NewGameBackground(window, assetManager),
+		bulletManager: bulletManager,
 		fpsText:       text.New(pixel.V(0.0, 0.0), atlas),
-		menuManager:   NewMenuManager(window),
+		gameMode:      GAME_MODE_MENU,
+		invaders:      invaders,
+		menuManager:   NewMenuManager(window, assetManager),
+		player:        player,
+		tempText:      text.New(pixel.V(0.0, 0.0), atlas),
+		window:        window,
+		youLoseAsset:  assetManager.LoadYouLoseAsset(),
+		youWinAsset:   assetManager.LoadYouWinAsset(),
 	}
 }
 
@@ -94,6 +107,10 @@ Draw renders the background, invaders, player, and bullets to the window
 func (g *Game) Draw() {
 	if g.gameMode == GAME_MODE_MENU {
 		g.drawMenu()
+	} else if g.gameMode == GAME_MODE_WON {
+		g.drawPlayerWon()
+	} else if g.gameMode == GAME_MODE_LOST {
+		g.drawPlayerLost()
 	} else if g.gameMode == GAME_MODE_PLAYING {
 		g.drawGame()
 	}
@@ -116,6 +133,7 @@ func (g *Game) drawGame() {
 
 func (g *Game) drawMenu() {
 	g.menuManager.Draw()
+	g.drawFPS()
 }
 
 func (g *Game) drawPlayerPosition() {
@@ -124,6 +142,18 @@ func (g *Game) drawPlayerPosition() {
 	fmt.Fprintf(g.tempText, "X = %0.1f Y = %0.1f", playerPos.X, playerPos.Y)
 
 	g.tempText.Draw(window, pixel.IM)
+}
+
+func (g *Game) drawPlayerLost() {
+	g.background.Draw()
+	g.youLoseAsset.Draw(g.window, pixel.IM.Moved(g.window.Bounds().Center()))
+	g.drawFPS()
+}
+
+func (g *Game) drawPlayerWon() {
+	g.background.Draw()
+	g.youWinAsset.Draw(g.window, pixel.IM.Moved(g.window.Bounds().Center()))
+	g.drawFPS()
 }
 
 /*
@@ -163,6 +193,10 @@ Update does all the updating, such as bullets, ships, and invaders
 func (g *Game) Update(dt float64) {
 	if g.gameMode == GAME_MODE_MENU {
 		g.updateMenu(dt)
+	} else if g.gameMode == GAME_MODE_WON {
+		g.updatePlayerWon(dt)
+	} else if g.gameMode == GAME_MODE_LOST {
+		g.updatePlayerLost(dt)
 	} else {
 		g.updatePlaying(dt)
 	}
@@ -181,9 +215,29 @@ func (g *Game) updateMenu(dt float64) {
 		}
 
 		if selection == MENU_ITEM_NEW_GAME {
+			g.invaders.Reset()
+			g.bulletManager.Reset(g.player.GetPosition(), g.player.GetHeight())
 			g.gameMode = GAME_MODE_PLAYING
 		}
 	}
+}
+
+func (g *Game) updatePlayerLost(dt float64) {
+	if g.window.JustPressed(pixelgl.KeyEnter) {
+		g.gameMode = GAME_MODE_MENU
+	}
+
+	g.CheckForQuit()
+	g.background.Update(dt)
+}
+
+func (g *Game) updatePlayerWon(dt float64) {
+	if g.window.JustPressed(pixelgl.KeyEnter) {
+		g.gameMode = GAME_MODE_MENU
+	}
+
+	g.CheckForQuit()
+	g.background.Update(dt)
 }
 
 func (g *Game) updatePlaying(dt float64) {
@@ -193,4 +247,12 @@ func (g *Game) updatePlaying(dt float64) {
 	g.MoveInvaders(dt)
 	g.CheckForPlayerMovement(dt)
 	g.CheckForPlayerShooting(dt)
+
+	if g.invaders.GetNumInvadersLeft() <= 0 {
+		g.gameMode = GAME_MODE_WON
+	}
+
+	if g.invaders.HaveReachedBottom(g.player) {
+		g.gameMode = GAME_MODE_LOST
+	}
 }

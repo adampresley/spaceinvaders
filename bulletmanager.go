@@ -16,6 +16,7 @@ const (
 BulletManager manages bullets
 */
 type BulletManager struct {
+	assetManager  *AssetManager
 	window        *pixelgl.Window
 	bullets       []*Bullet
 	currentBullet int
@@ -33,14 +34,15 @@ type BulletHitVector struct {
 /*
 NewBulletManager makes a new manager to handle tracking bullets, collisions, etc
 */
-func NewBulletManager(window *pixelgl.Window, playerPos pixel.Vec, playerHeight float64) *BulletManager {
+func NewBulletManager(window *pixelgl.Window, assetManager *AssetManager, playerPos pixel.Vec, playerHeight float64) *BulletManager {
 	bullets := make([]*Bullet, MAX_BULLETS)
 
 	for i := 0; i < MAX_BULLETS; i++ {
-		bullets[i] = NewBullet(window, playerPos, playerHeight)
+		bullets[i] = NewBullet(window, assetManager, playerPos, playerHeight)
 	}
 
 	return &BulletManager{
+		assetManager:  assetManager,
 		window:        window,
 		bullets:       bullets,
 		currentBullet: -1,
@@ -60,7 +62,7 @@ func (bm *BulletManager) Draw() {
 /*
 Move moves all active bullets
 */
-func (bm *BulletManager) Move(dt float64, playerPos pixel.Vec, playHeight float64, invaders *Invaders) []BulletHitVector {
+func (bm *BulletManager) Move(dt float64, playerPos pixel.Vec, playerHeight float64, invaders *Invaders) []BulletHitVector {
 	hits := make([]BulletHitVector, 0, MAX_BULLETS)
 
 	for i := 0; i < MAX_BULLETS; i++ {
@@ -70,17 +72,29 @@ func (bm *BulletManager) Move(dt float64, playerPos pixel.Vec, playHeight float6
 
 		if isHit {
 			bm.bullets[i].Kill()
-			bm.bullets[i].Reset(playerPos, playHeight)
+			bm.bullets[i].Reset(playerPos, playerHeight)
 			hits = append(hits, BulletHitVector{Row: row, Col: col})
 		}
 
 		if bm.bullets[i].IsTopEdge() {
 			bm.bullets[i].Kill()
-			bm.bullets[i].Reset(playerPos, playHeight)
+			bm.bullets[i].Reset(playerPos, playerHeight)
 		}
 	}
 
 	return hits
+}
+
+/*
+Reset puts all the bullets back
+*/
+func (bm *BulletManager) Reset(playerPos pixel.Vec, playerHeight float64) {
+	bm.currentBullet = -1
+	bm.nextShotTime = time.Now()
+
+	for i := 0; i < MAX_BULLETS; i++ {
+		bm.bullets[i].Reset(playerPos, playerHeight)
+	}
 }
 
 /*

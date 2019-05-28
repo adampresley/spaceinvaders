@@ -16,18 +16,21 @@ const (
 Invaders manages a set of invader structs and their movement
 */
 type Invaders struct {
-	window    *pixelgl.Window
-	invaders  [MAX_ROWS][MAX_COLS]*Invader
-	direction float64
-	firstCol  int
-	lastCol   int
+	assetManager      *AssetManager
+	direction         float64
+	firstCol          int
+	invaders          [MAX_ROWS][MAX_COLS]*Invader
+	lastCol           int
+	lowestInvaderRect pixel.Rect
+	numInvadersLeft   int
+	window            *pixelgl.Window
 }
 
 /*
 NewInvaders creates a new struct. It is initialied with a set of
 invaders, each positioned in rows and columns
 */
-func NewInvaders(window *pixelgl.Window) *Invaders {
+func NewInvaders(window *pixelgl.Window, assetManager *AssetManager) *Invaders {
 	var err error
 	var newInvader *Invader
 	var invaders [MAX_ROWS][MAX_COLS]*Invader
@@ -40,7 +43,7 @@ func NewInvaders(window *pixelgl.Window) *Invaders {
 		for col := 0; col < MAX_COLS; col++ {
 			color := rand.Intn(3)
 
-			if newInvader, err = NewInvader(window, color); err != nil {
+			if newInvader, err = NewInvader(window, color, assetManager); err != nil {
 				panic(err)
 			}
 
@@ -54,11 +57,14 @@ func NewInvaders(window *pixelgl.Window) *Invaders {
 	}
 
 	return &Invaders{
-		window:    window,
-		invaders:  invaders,
-		direction: 1,
-		firstCol:  0,
-		lastCol:   MAX_COLS - 1,
+		assetManager:      assetManager,
+		direction:         1,
+		firstCol:          0,
+		invaders:          invaders,
+		lastCol:           MAX_COLS - 1,
+		lowestInvaderRect: invaders[MAX_ROWS-1][0].GetRect(),
+		numInvadersLeft:   MAX_ROWS * MAX_COLS,
+		window:            window,
 	}
 }
 
@@ -80,8 +86,29 @@ func (invaders *Invaders) GetInvaders() [MAX_ROWS][MAX_COLS]*Invader {
 	return invaders.invaders
 }
 
+/*
+GetNumInvadersLeft returns the number of invaders left alive
+*/
+func (invaders *Invaders) GetNumInvadersLeft() int {
+	return invaders.numInvadersLeft
+}
+
+func (invaders *Invaders) HaveReachedBottom(player *Player) bool {
+	playerRect := player.GetRect()
+
+	if invaders.lowestInvaderRect.Min.Y <= playerRect.Min.Y {
+		return true
+	}
+
+	return false
+}
+
+/*
+Kill marks an invader as dead
+*/
 func (invaders *Invaders) Kill(row, col int) {
 	invaders.invaders[row][col].dead = true
+	invaders.numInvadersLeft--
 	invaders.recalculateFirstAndLastColumn()
 }
 
@@ -113,11 +140,27 @@ func (invaders *Invaders) Move(dt float64) {
 PushDown moves all invaders down a row
 */
 func (invaders *Invaders) PushDown() {
+	lowestRow := 0
+	lowestCol := 0
+
 	for row := 0; row < MAX_ROWS; row++ {
 		for col := 0; col < MAX_COLS; col++ {
 			invaders.invaders[row][col].PushDown()
+
+			if invaders.invaders[row][col].IsAlive() {
+				if row > lowestRow {
+					lowestRow = row
+				}
+
+				if col > lowestCol {
+					lowestCol = col
+				}
+			}
 		}
 	}
+
+	invader := invaders.invaders[lowestRow][lowestCol]
+	invaders.lowestInvaderRect = invader.GetRect()
 }
 
 func (invaders *Invaders) recalculateFirstAndLastColumn() {
@@ -146,4 +189,28 @@ func (invaders *Invaders) recalculateFirstAndLastColumn() {
 
 	invaders.lastCol = lastCol
 	invaders.firstCol = firstCol
+}
+
+/*
+Reset puts all the invaders back into their place and brings them
+back to life
+*/
+func (invaders *Invaders) Reset() {
+	y := window.Bounds().H() - 25
+
+	for row := 0; row < MAX_ROWS; row++ {
+		x := 180.0
+
+		for col := 0; col < MAX_COLS; col++ {
+			invaders.invaders[row][col].SetPosition(pixel.V(x, y))
+			invaders.invaders[row][col].Resurrect()
+
+			x += 70.0
+		}
+
+		y -= 50.0
+	}
+
+	invaders.numInvadersLeft = MAX_ROWS * MAX_COLS
+	invaders.lastCol = MAX_COLS - 1
 }

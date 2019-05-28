@@ -11,6 +11,7 @@ import (
 GameBackground handles the scrolling background during the game
 */
 type GameBackground struct {
+	assetManager        *AssetManager
 	window              *pixelgl.Window
 	starsTile1          *pixel.Sprite
 	starsTile2          *pixel.Sprite
@@ -28,18 +29,12 @@ type GameBackground struct {
 /*
 NewGameBackground creates a new background manager
 */
-func NewGameBackground(window *pixelgl.Window) *GameBackground {
-	var err error
+func NewGameBackground(window *pixelgl.Window, assetManager *AssetManager) *GameBackground {
 	var pic1 pixel.Picture
 	var pic2 pixel.Picture
 
-	if pic1, err = loadPicture("/assets/stars.png"); err != nil {
-		panic(err)
-	}
-
-	if pic2, err = loadPicture("/assets/closer-stars.png"); err != nil {
-		panic(err)
-	}
+	pic1 = assetManager.GetStarsAsset()
+	pic2 = assetManager.GetCloserStarsAsset()
 
 	centerVector := window.Bounds().Center()
 
@@ -47,6 +42,7 @@ func NewGameBackground(window *pixelgl.Window) *GameBackground {
 	topVector = topVector.Add(pixel.V(0.0, 768.0))
 
 	return &GameBackground{
+		assetManager:        assetManager,
 		window:              window,
 		starsTile1:          pixel.NewSprite(pic1, pic1.Bounds()),
 		starsTile2:          pixel.NewSprite(pic1, pic1.Bounds()),

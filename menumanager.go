@@ -14,6 +14,7 @@ const (
 MenuManager handles rendering and accepting input for the menu
 */
 type MenuManager struct {
+	assetManager     *AssetManager
 	window           *pixelgl.Window
 	menuNewGameAsset *pixel.Sprite
 	menuQuitAsset    *pixel.Sprite
@@ -23,11 +24,12 @@ type MenuManager struct {
 /*
 NewMenuManager initializes the menu manager
 */
-func NewMenuManager(window *pixelgl.Window) *MenuManager {
+func NewMenuManager(window *pixelgl.Window, assetManager *AssetManager) *MenuManager {
 	return &MenuManager{
+		assetManager:     assetManager,
 		window:           window,
-		menuNewGameAsset: loadMenuNewGameAsset(),
-		menuQuitAsset:    loadMenuQuitAsset(),
+		menuNewGameAsset: assetManager.LoadMenuNewGameAsset(),
+		menuQuitAsset:    assetManager.LoadMenuQuitAsset(),
 		currentMenuItem:  MENU_ITEM_NEW_GAME,
 	}
 }

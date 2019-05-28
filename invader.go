@@ -9,43 +9,45 @@ import (
 Invader represents a single alien invader
 */
 type Invader struct {
-	window    *pixelgl.Window
-	sprite    *pixel.Sprite
-	color     int
-	pos       pixel.Vec
-	width     float64
-	height    float64
-	leftEdge  float64
-	rightEdge float64
-	dead      bool
+	assetManager *AssetManager
+	window       *pixelgl.Window
+	sprite       *pixel.Sprite
+	color        int
+	pos          pixel.Vec
+	width        float64
+	height       float64
+	leftEdge     float64
+	rightEdge    float64
+	dead         bool
 }
 
 /*
 NewInvader makes a new invader struct. It is initialized with one of
 three colors: blue(1), green(2), or red(3).
 */
-func NewInvader(window *pixelgl.Window, color int) (*Invader, error) {
+func NewInvader(window *pixelgl.Window, color int, assetManager *AssetManager) (*Invader, error) {
 	var sprite *pixel.Sprite
 
 	switch color {
 	case 1:
-		sprite = getBlueInvaderSprite()
+		sprite = assetManager.GetBlueInvaderSprite()
 
 	case 2:
-		sprite = getGreenInvaderSprite()
+		sprite = assetManager.GetGreenInvaderSprite()
 
 	default:
-		sprite = getRedInvaderSprite()
+		sprite = assetManager.GetRedInvaderSprite()
 	}
 
 	result := &Invader{
-		window: window,
-		sprite: sprite,
-		color:  color,
-		pos:    pixel.V(0, 0),
-		width:  sprite.Frame().W(),
-		height: sprite.Frame().H(),
-		dead:   false,
+		assetManager: assetManager,
+		window:       window,
+		sprite:       sprite,
+		color:        color,
+		pos:          pixel.V(0, 0),
+		width:        sprite.Frame().W(),
+		height:       sprite.Frame().H(),
+		dead:         false,
 
 		leftEdge:  sprite.Frame().W() / 2,
 		rightEdge: window.Bounds().W() - (sprite.Frame().W() / 2),
@@ -106,6 +108,13 @@ PushDown moves the invader down a row
 */
 func (invader *Invader) PushDown() {
 	invader.pos.Y -= invader.height
+}
+
+/*
+Resurrect brings this invader back to life
+*/
+func (invader *Invader) Resurrect() {
+	invader.dead = false
 }
 
 /*
