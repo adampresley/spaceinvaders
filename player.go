@@ -47,7 +47,8 @@ Draw renders this ship onto the window
 */
 func (p *Player) Draw() {
 	if !p.dead {
-		p.sprite.Draw(p.window, pixel.IM.Moved(p.pos))
+		p.sprite.Draw(p.assetManager.Batch, pixel.IM.Moved(p.pos))
+		// p.sprite.Draw(p.window, pixel.IM.Moved(p.pos))
 	}
 }
 

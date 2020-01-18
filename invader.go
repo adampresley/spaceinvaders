@@ -61,7 +61,8 @@ Draw renders this invader onto the window
 */
 func (invader *Invader) Draw() {
 	if !invader.dead {
-		invader.sprite.Draw(invader.window, pixel.IM.Moved(invader.pos))
+		invader.sprite.Draw(invader.assetManager.Batch, pixel.IM.Moved(invader.pos))
+		// invader.sprite.Draw(invader.window, pixel.IM.Moved(invader.pos))
 	}
 }
 

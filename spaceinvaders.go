@@ -52,6 +52,7 @@ func run() {
 
 		game.Update(dt)
 		game.Draw()
+		game.AssetManager.Batch.Draw(window)
 		window.Update()
 
 		frames++

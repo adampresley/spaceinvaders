@@ -42,7 +42,8 @@ Draw renders this bullet onto the window
 */
 func (b *Bullet) Draw() {
 	if !b.dead {
-		b.sprite.Draw(b.window, pixel.IM.Moved(b.pos))
+		b.sprite.Draw(b.assetManager.Batch, pixel.IM.Moved(b.pos))
+		// b.sprite.Draw(b.window, pixel.IM.Moved(b.pos))
 	}
 }
 

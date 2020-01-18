@@ -9,6 +9,7 @@ import (
 )
 
 type AssetManager struct {
+	Batch *pixel.Batch
 	spritesheet pixel.Picture
 }
 
@@ -16,9 +17,14 @@ func NewAssetManager() *AssetManager {
 	result := &AssetManager{}
 
 	result.spritesheet = result.loadSpritesheet()
+	result.Batch = result.createBatch(result.spritesheet)
 	return result
 }
 
+func (am *AssetManager) createBatch(spritesheet pixel.Picture) *pixel.Batch {
+	batch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
+	return batch
+}
 /*
 loadPicture loads an image file into a picture struct
 */

@@ -27,7 +27,7 @@ const (
 Game controls all high level aspects of the game
 */
 type Game struct {
-	assetManager  *AssetManager
+	AssetManager *AssetManager
 	atlas         *text.Atlas
 	background    *GameBackground
 	bulletManager *BulletManager
@@ -54,7 +54,7 @@ func NewGame(window *pixelgl.Window) *Game {
 	bulletManager := NewBulletManager(window, assetManager, player.GetPosition(), player.GetHeight())
 
 	return &Game{
-		assetManager:  assetManager,
+		AssetManager:  assetManager,
 		atlas:         atlas,
 		background:    NewGameBackground(window, assetManager),
 		bulletManager: bulletManager,
@@ -123,6 +123,8 @@ func (g *Game) drawFPS() {
 }
 
 func (g *Game) drawGame() {
+	g.AssetManager.Batch.Clear()
+
 	g.background.Draw()
 	g.invaders.Draw()
 	g.player.Draw()
