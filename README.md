@@ -2,6 +2,10 @@
 
 This is a Space Invaders clone written in Go, using the [Pixel](https://github.com/faiface/pixel) library.
 
+![Screenshot 1](./space-invaders-screenshot1.png)
+
+![Screenshot 2](./space-invaders-screenshot2.png)
+
 ## Running
 
 ```bash
